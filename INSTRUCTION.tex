@@ -1,0 +1,814 @@
+% \documentclass{article}
+% \usepackage{graphicx} % Required for inserting images
+
+% \title{bci}
+% \author{INTERFACEs VISTEC}
+% \date{September 2026}
+
+% \begin{document}
+
+% \maketitle
+
+% \section{Introduction}
+
+% \end{document}
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  10pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% --- Unicode glyphs that pdfLaTeX does not know out of the box -------------
+% XeLaTeX/LuaLaTeX get these from unicode-math; pdfLaTeX needs them declared.
+\ifPDFTeX
+  \usepackage{newunicodechar}
+  \newunicodechar{→}{\ensuremath{\rightarrow}}
+  \newunicodechar{∈}{\ensuremath{\in}}
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Homework --- Build and Benchmark Your Own MI-EEG Pipeline},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Homework\\Build and Benchmark Your Own MI-EEG Pipeline}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\textbf{Dataset:} BCI Competition IV-2a (BCIC2a) · \textbf{Setting:}
+subject-dependent · \textbf{Task:} 2-class motor imagery (left hand vs
+right hand)
+
+You will design your own EEG preprocessing pipeline and your own neural
+network, plug both into this repository, and benchmark them against
+\textbf{MixNet} under exactly the same protocol --- same 9 subjects,
+same 5 folds, same test session, same metrics.
+
+
+
+\section{1. Learning objectives}\label{learning-objectives}
+
+By the end of this assignment you should be able to:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Implement a feature-extraction pipeline and a deep model against a
+  fixed experimental API instead of a one-off notebook.
+\item
+  Run a controlled comparison against a strong published baseline and
+  report it honestly, including where your method loses.
+\item
+  Analyse a result instead of only reporting it: read the per-subject
+  table against the paired significance test, and form a hypothesis for
+  the pattern you see.
+\end{enumerate}
+
+
+
+\section{2. The dataset}\label{the-dataset}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.8}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Property
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Subjects & 9 (\texttt{A01}--\texttt{A09}) \\
+Sessions & \texttt{T} (training) and \texttt{E} (evaluation), recorded
+on different days \\
+Classes used & 2 --- left hand (\texttt{0}), right hand (\texttt{1}) \\
+Trials & 144 per session per subject (72 per class) \\
+Channels & 20 pre-selected motor-cortex channels (see
+\texttt{mixnet/preprocessing/config.py}) \\
+Original rate & 250 Hz, downsampled to 100 Hz by the provided loader \\
+MI window & 4 S (2 s → 6 s after the cue) \\
+\end{longtable}
+}
+
+\textbf{Subject-dependent} means each subject gets their own model. For
+every subject, session \texttt{T} is split into train/validation with
+5-fold stratified cross-validation, and session \texttt{E} is the
+\textbf{untouched test set} of every fold. Never train on session
+\texttt{E}.
+
+
+
+\section{3. What is given vs what you
+write}\label{what-is-given-vs-what-you-write}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+File
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{mixnet/preprocessing/BCIC2a/HW\_prep.py} & \textbf{YOU WRITE}
+--- 2 functions \\
+\texttt{mixnet/models/HW\_Net.py} & \textbf{YOU WRITE} --- 2
+functions \\
+\texttt{experiments/configs/HW\_Net.py} & \textbf{YOU TUNE} --- shapes +
+hyper-parameters \\
+\texttt{experiments/prep\_HW.py} & given --- runs your pipeline (\textbf{NOTE:
+add your own parameters}) \\
+\texttt{experiments/run\_HW\_Net.py} & given --- 5-fold training/eval
+driver \\
+\texttt{experiments/benchmark.py} & given --- aggregation + statistics,
+no edits needed \\
+everything under \texttt{mixnet/} else & given --- do not modify \\
+\end{longtable}
+}
+
+Each file you edit starts with a header block explaining the contract it
+must satisfy. Read those headers first --- they answer most questions.
+
+
+
+\section{4. Setup}\label{setup}
+
+\begin{quote}
+\textbf{Run every command below from the \texttt{experiments/}
+directory} unless stated otherwise. The scripts resolve
+\texttt{datasets/} and \texttt{logs/} relative to the current working
+directory, and both are git-ignored.
+\end{quote}
+
+\subsection{4.1 Prerequisites}\label{prerequisites}
+
+\begin{itemize}
+\tightlist
+\item
+  Python \textbf{3.8.10} (the package declares
+  \texttt{\textgreater{}=3.8,\ \textless{}=3.10.4})
+\item
+  An NVIDIA GPU with CUDA --- \texttt{mixnet/models/base.py} reads GPU
+  memory during evaluation, so a GPU is effectively required
+\item
+  \texttt{git}
+\end{itemize}
+
+\subsection{4.2 Fork and clone}\label{fork-and-clone}
+
+Fork \texttt{https://github.com/Max-Phairot-A/MixNet} to your own GitHub
+account so you can commit your work, then:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{git}\NormalTok{ clone https://github.com/}\OperatorTok{\textless{}}\NormalTok{your{-}github{-}username}\OperatorTok{\textgreater{}}\NormalTok{/MixNet.git}
+\BuiltInTok{cd}\NormalTok{ MixNet}
+\FunctionTok{git}\NormalTok{ switch homework}
+\end{Highlighting}
+\end{Shaded}
+
+Work on that branch.
+
+\subsection{4.3 Create the environment}\label{create-the-environment}
+
+The reference environment is the TensorFlow 2.7.0 GPU image:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{docker}\NormalTok{ pull tensorflow/tensorflow:2.7.0{-}gpu}
+\ExtensionTok{docker}\NormalTok{ run }\AttributeTok{{-}ti} \AttributeTok{{-}{-}gpus}\NormalTok{ all }\AttributeTok{{-}{-}name}\NormalTok{ mixnet\_container }\AttributeTok{{-}v} \VariableTok{$(}\BuiltInTok{pwd}\VariableTok{)}\NormalTok{:/workspace }\DataTypeTok{\textbackslash{}}
+\NormalTok{    docker.io/tensorflow/tensorflow:2.7.0{-}gpu bash}
+\BuiltInTok{cd}\NormalTok{ /workspace}
+\end{Highlighting}
+\end{Shaded}
+
+Or with conda, if you already have a working CUDA setup:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{conda}\NormalTok{ create }\AttributeTok{{-}n}\NormalTok{ mixnet python=3.8.10 }\AttributeTok{{-}y}
+\ExtensionTok{conda}\NormalTok{ activate mixnet}
+\ExtensionTok{pip}\NormalTok{ install tensorflow{-}gpu==2.7.0}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{4.4 Install the package --- read this
+carefully}\label{install-the-package-read-this-carefully}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{pip}\NormalTok{ install }\AttributeTok{{-}r}\NormalTok{ requirements.txt}
+\ExtensionTok{pip}\NormalTok{ install }\AttributeTok{{-}e}\NormalTok{ .         }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{quote}
+% \textbf{Use pip install -e .}
+
+\texttt{pip\ install\ -e\ .} installs in \emph{editable} mode: it links
+to your working copy, so your edits take effect immediately. If you must
+use \texttt{pip\ install\ .}, you have to re-run it after \textbf{every}
+change under \texttt{mixnet/}.
+\end{quote}
+
+Verify the install points at your clone:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{python} \AttributeTok{{-}c} \StringTok{"import mixnet; print(mixnet.\_\_file\_\_)"}
+\CommentTok{\# should print \textless{}your clone\textgreater{}/mixnet/\_\_init\_\_.py — NOT a site{-}packages path}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{4.5 Download the data}\label{download-the-data}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\BuiltInTok{cd}\NormalTok{ experiments}
+\ExtensionTok{python}\NormalTok{ download\_datasets.py }\AttributeTok{{-}{-}dataset} \StringTok{\textquotesingle{}BCIC2a\textquotesingle{}}
+\end{Highlighting}
+\end{Shaded}
+
+This writes
+\texttt{experiments/datasets/BCIC2a/raw/A0\{1..9\}\{T,E\}.mat}. If the
+download fails, fetch the files manually from
+\url{http://bnci-horizon-2020.eu/database/data-sets} (dataset 001-2014)
+and drop them into that folder.
+
+
+
+\section{5. Reproduce the MixNet baseline
+first}\label{reproduce-the-mixnet-baseline-first}
+
+Do this \textbf{before} writing any code. It confirms your environment
+works and gives you the number you have to beat.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\BuiltInTok{cd}\NormalTok{ experiments}
+
+\CommentTok{\# MixNet\textquotesingle{}s own preprocessing (spectral{-}spatial signals), subject{-}dependent only}
+\ExtensionTok{python}\NormalTok{ prep\_spectral\_spatial\_signals.py }\AttributeTok{{-}{-}dataset} \StringTok{\textquotesingle{}BCIC2a\textquotesingle{}} \AttributeTok{{-}{-}setting} \StringTok{\textquotesingle{}dependent\textquotesingle{}}
+
+\CommentTok{\# MixNet with the paper\textquotesingle{}s optimal BCIC2a subject{-}dependent hyper{-}parameters}
+\ExtensionTok{python}\NormalTok{ run\_MixNet.py }\AttributeTok{{-}{-}model\_name} \StringTok{\textquotesingle{}MixNet\textquotesingle{}} \AttributeTok{{-}{-}dataset} \StringTok{\textquotesingle{}BCIC2a\textquotesingle{}} \DataTypeTok{\textbackslash{}}
+    \AttributeTok{{-}{-}train\_type} \StringTok{\textquotesingle{}subject\_dependent\textquotesingle{}} \AttributeTok{{-}{-}data\_type} \StringTok{\textquotesingle{}spectral\_spatial\_signals\textquotesingle{}} \DataTypeTok{\textbackslash{}}
+    \AttributeTok{{-}{-}adaptive\_gradient}\NormalTok{ True }\AttributeTok{{-}{-}policy} \StringTok{\textquotesingle{}HistoricalTangentSlope\textquotesingle{}} \DataTypeTok{\textbackslash{}}
+    \AttributeTok{{-}{-}log\_dir} \StringTok{\textquotesingle{}logs\textquotesingle{}} \AttributeTok{{-}{-}num\_class}\NormalTok{ 2 }\AttributeTok{{-}{-}GPU}\NormalTok{ 0 }\DataTypeTok{\textbackslash{}}
+    \AttributeTok{{-}{-}margin}\NormalTok{ 1.0 }\AttributeTok{{-}{-}n\_component}\NormalTok{ 2 }\AttributeTok{{-}{-}warmup}\NormalTok{ 7}
+\end{Highlighting}
+\end{Shaded}
+
+Record the resulting accuracy and F1 with:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{python}\NormalTok{ benchmark.py}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Deliverable checkpoint:} paste the MixNet summary table into
+your report. That is your baseline; every later claim is relative to it.
+
+
+
+\section{6. Task 1 --- your preprocessing
+pipeline}\label{task-1-your-preprocessing-pipeline}
+
+\textbf{File:} \texttt{mixnet/preprocessing/BCIC2a/HW\_prep.py}
+
+Implement two functions:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Function
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Called with
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Must return
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{fit\_transform(X,\ y,\ pick\_smp\_freq,\ **kwargs)} & the
+training fold only & \texttt{(X\_out,\ state)} \\
+\texttt{transform(X,\ state,\ pick\_smp\_freq,\ **kwargs)} & validation
+and test folds & \texttt{X\_out} \\
+\end{longtable}
+}
+
+You receive \texttt{X} of shape \texttt{(n\_trials,\ 20,\ 400)} --- 20
+channels, 4 s at 100 Hz --- and labels \texttt{y\ ∈\ \{0,\ 1\}}. You
+return features of shape \texttt{(n\_trials,\ ...)}; the trailing shape
+is yours to choose.
+
+\subsection{The rule that carries the most
+marks}\label{the-rule-that-carries-the-most-marks}
+
+\textbf{Anything that learns from data must be fitted inside
+\texttt{fit\_transform} on the training fold only, and merely applied
+inside \texttt{transform}.} CSP filters, PCA, a mean/std scaler, a
+whitening matrix, a channel-selection criterion --- all of these leak if
+you fit them on the full dataset before splitting. Leakage inflates
+accuracy and makes your comparison against MixNet meaningless.
+
+Stateless operations (band-pass filtering, cropping, resampling,
+log-variance) are safe to apply to each split independently.
+
+\subsection{Approaches you may take}\label{approaches-you-may-take}
+
+\begin{itemize}
+\tightlist
+\item
+  filter bank + CSP (\texttt{from\ mixnet.preprocessing\ import\ FBCSP})
+\item
+  band-power / log-variance features per channel per band
+\item
+  Riemannian covariance + tangent-space projection
+\item
+  STFT or wavelet time-frequency maps
+\item
+  band-pass + per-channel z-scoring (a simple, respectable baseline)
+\end{itemize}
+
+Helpers already in the repo:
+\texttt{mixnet.utils.butter\_bandpass\_filter}, \texttt{resampling},
+\texttt{psd\_welch}; \texttt{mixnet.preprocessing.FBCSP},
+\texttt{SpectralSpatialMapping}.
+
+NOTE: You can also add your own helper functions in this file or in
+\texttt{mixnet/preprocessing/BCIC2a/HW\_prep\_helpers.py} if you want to
+keep this file clean.
+
+\subsection{Run it}\label{run-it}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\BuiltInTok{cd}\NormalTok{ experiments}
+\ExtensionTok{python}\NormalTok{ prep\_HW.py}
+\end{Highlighting}
+\end{Shaded}
+
+Output lands in
+\texttt{experiments/datasets/BCIC2a/HW\_prep/2\_class/subject\_dependent/}.
+Expect 6 \texttt{.npy} files per fold for a subject (30 files per
+subject) --- 270 files in total for 9 subjects.
+
+
+
+\section{7. Task 2 --- your model}\label{task-2-your-model}
+
+\textbf{File:} \texttt{mixnet/models/HW\_Net.py}
+
+Implement \texttt{\_config()} (hyper-parameters) and \texttt{build()}
+(the architecture). The training loops (\texttt{train\_step} /
+\texttt{val\_step} / \texttt{test\_step} / \texttt{pred\_step}) are
+already written for you. Note that you may rewrite these steps if you go
+multi-task or use other loss functions. See MixNet for reference.
+
+\subsection{Contract}\label{contract}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Input:} one tensor of shape \texttt{self.input\_shape} (no
+  batch axis)
+\item
+  \textbf{Output:} exactly \textbf{one} tensor of shape
+  \texttt{(batch,\ num\_class)} ending in
+  \texttt{layers.Activation(\textquotesingle{}softmax\textquotesingle{})}
+  --- multi-output models take a different code path in
+  \texttt{mixnet/models/base.py} and will not work
+\item
+  \textbf{Name:} \texttt{name=self.model\_name}; never
+  \texttt{\textquotesingle{}MixNet\textquotesingle{}} or
+  \texttt{\textquotesingle{}MIN2Net\textquotesingle{}}, because
+  \texttt{base.py} branches on those names
+\item
+  Keep the \texttt{load\_weights} block, or \texttt{evaluate()} will
+  silently score an untrained network
+\end{itemize}
+
+\subsection{Get the plumbing working
+first}\label{get-the-plumbing-working-first}
+
+Before designing anything clever, paste this into \texttt{build()} and
+run one subject end to end:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{input1  }\OperatorTok{=}\NormalTok{ layers.Input(shape}\OperatorTok{=}\VariableTok{self}\NormalTok{.input\_shape)}
+\NormalTok{x       }\OperatorTok{=}\NormalTok{ layers.Flatten()(input1)}
+\NormalTok{x       }\OperatorTok{=}\NormalTok{ layers.Dense(}\VariableTok{self}\NormalTok{.num\_class)(x)}
+\NormalTok{softmax }\OperatorTok{=}\NormalTok{ layers.Activation(}\StringTok{\textquotesingle{}softmax\textquotesingle{}}\NormalTok{, name}\OperatorTok{=}\StringTok{\textquotesingle{}softmax\textquotesingle{}}\NormalTok{)(x)}
+\NormalTok{model   }\OperatorTok{=}\NormalTok{ Model(inputs}\OperatorTok{=}\NormalTok{input1, outputs}\OperatorTok{=}\NormalTok{softmax, name}\OperatorTok{=}\VariableTok{self}\NormalTok{.model\_name)}
+\end{Highlighting}
+\end{Shaded}
+
+Then replace it. \texttt{mixnet/models/EEGNet.py} and
+\texttt{DeepConvNet.py} are two complete worked examples of the same
+contract.
+
+\subsection{If you go multi-task, the step functions are no longer
+free}\label{if-you-go-multi-task-the-step-functions-are-no-longer-free}
+
+The \texttt{train\_step} / \texttt{val\_step} / \texttt{test\_step} /
+\texttt{pred\_step} methods given to you are written for a
+\textbf{single-task} model: one output, one loss (cross-entropy). MixNet
+is multi-task --- it optimises reconstruction (MSE) + triplet +
+cross-entropy together with adaptive loss weights --- and you may do the
+same, but then \textbf{you have to rewrite all four steps}, plus three
+other things that must change with them:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+What
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Change
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{build()} & return a \textbf{list} of outputs, classifier softmax
+\textbf{last} \\
+\texttt{configs/HW\_Net.py} & one entry per task, same order, in
+\texttt{loss}, \texttt{loss\_names} and \texttt{loss\_weights}; keep the
+name \texttt{\textquotesingle{}crossentropy\textquotesingle{}} for the
+classification loss or class balancing breaks \\
+the four steps & unpack every output, compute every loss, combine with
+the incoming \texttt{loss\_weights}, log one
+\texttt{*\_\textless{}name\textgreater{}\_loss} per task \\
+\texttt{evaluate()} & \textbf{override it inside \texttt{HW\_Net}} ---
+\texttt{base.py} only unpacks multi-output models named
+\texttt{MixNet}/\texttt{MIN2Net}; every other model hits
+\texttt{np.argmax(test\_pred,\ axis=1)}, which is garbage for a list of
+outputs \\
+\end{longtable}
+}
+
+Do \textbf{not} rename your model to \texttt{MixNet*} to sneak into that
+branch, and do not edit \texttt{base.py}. Overriding \texttt{evaluate()}
+in \texttt{HW\_Net.py} is allowed --- it is one of your two files.
+
+\texttt{mixnet/models/MixNet.py} is the reference implementation ---
+read its steps side by side with the single-task ones in your file.
+
+\subsection{Match the shapes}\label{match-the-shapes}
+
+Nothing derives the shapes for you --- you set them yourself in
+\texttt{experiments/configs/HW\_Net.py}, and the two must agree:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{data\_params.data\_format} --- how \texttt{DataLoader}
+  reshapes what Task 1 saved
+\item
+  \texttt{model\_params.input\_shape} --- what your \texttt{build()}
+  receives, i.e.~the reshaped tensor \textbf{without} the leading trial
+  axis
+\end{itemize}
+
+See \texttt{mixnet.utils.DataLoader.\_change\_data\_format} for details.
+
+\subsection{Run it}\label{run-it-1}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\BuiltInTok{cd}\NormalTok{ experiments}
+\ExtensionTok{python}\NormalTok{ run\_HW\_Net.py}
+\end{Highlighting}
+\end{Shaded}
+
+Results land in
+\texttt{experiments/logs/HW\_Net/subject\_dependent\_2\_classes\_BCIC2a/}:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+File
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Contents
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{S001\_all\_results.csv} & one row per fold ---
+\texttt{test\_acc}, \texttt{f1-score}, timing, memory \\
+\texttt{S001\_prediction\_results.npy} & \texttt{y\_true} /
+\texttt{y\_pred} per fold \\
+\texttt{S001\_fold01\_out\_weights.h5} & best checkpoint of that fold \\
+\texttt{S001\_fold01\_out\_log.csv} & per-epoch training curve \\
+\end{longtable}
+}
+
+\subsection{Tuning}\label{tuning}
+
+Tune in \texttt{experiments/configs/HW\_Net.py} (\texttt{lr},
+\texttt{batch\_size}, \texttt{dropout\_rate}, \texttt{es\_patience},
+\ldots). Every key of \texttt{model\_params} is forwarded to your model
+and re-applied as \texttt{self.\textless{}key\textgreater{}}, so you can
+sweep hyper-parameters without touching model code.
+
+\textbf{Select on validation, never on test.} Change the
+\texttt{log\_path} suffix for each configuration so runs do not
+overwrite each other --- \texttt{benchmark.py} discovers every directory
+under \texttt{logs/} automatically.
+
+
+
+\section{8. Task 3 --- benchmark against
+MixNet}\label{task-3-benchmark-against-mixnet}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\BuiltInTok{cd}\NormalTok{ experiments}
+\ExtensionTok{python}\NormalTok{ benchmark.py}
+\end{Highlighting}
+\end{Shaded}
+
+With no arguments it finds every run under \texttt{logs/}, averages the
+5 folds within each subject, reports mean ± std across the 9 subjects,
+and runs a paired comparison between a \texttt{MixNet} run and an
+\texttt{HW\_Net} run. To be explicit:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{python}\NormalTok{ benchmark.py }\AttributeTok{{-}{-}baseline}\NormalTok{ MixNet }\AttributeTok{{-}{-}candidate}\NormalTok{ HW\_Net }\AttributeTok{{-}{-}metric}\NormalTok{ test\_acc}
+\end{Highlighting}
+\end{Shaded}
+
+It writes \texttt{benchmark\_per\_subject.csv} and
+\texttt{benchmark\_summary.csv} and prints markdown tables you can paste
+straight into your report.
+
+\subsection{How to read the output}\label{how-to-read-the-output}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Per-subject table} --- the honest picture. BCIC2a has large
+  between-subject variance; a method can win on average while losing on
+  4 of 9 subjects.
+\item
+  \textbf{Paired t-test / Wilcoxon} --- is the difference more than
+  noise? With only 9 subjects the power is low, so \emph{never} report a
+  p-value without the per-subject table beside it.
+\item
+  \textbf{\texttt{candidate\ wins\ on\ k/9\ subjects}} --- often more
+  informative than the mean.
+\end{itemize}
+
+\subsection{You are not required to beat
+MixNet}\label{you-are-not-required-to-beat-mixnet}
+
+MixNet is a published method with tuned hyper-parameters. A careful,
+honest, well-analysed comparison that loses scores better than a win you
+cannot explain or that came from a leak. What is graded is the quality
+of the experiment and the analysis.
+
+
+
+\section{9. Deliverables}\label{deliverables}
+
+Push to your homework branch and submit its URL.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Code} --- your \texttt{HW\_prep.py}, \texttt{HW\_Net.py},
+  \texttt{configs/HW\_Net.py}
+\item
+  \textbf{Results} --- \texttt{benchmark\_per\_subject.csv},
+  \texttt{benchmark\_summary.csv}, and the \texttt{S*\_all\_results.csv}
+  files for your runs (these are git-ignored by default; copy them into
+  a \texttt{results/} folder at the repo root and commit that)
+\item
+  \textbf{\texttt{REPORT}} (3--5 A4 pages) at the repo root:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Preprocessing} --- what you built and \emph{why}; how you
+    prevented leakage
+  \item
+    \textbf{Model} --- architecture diagram or layer table, parameter
+    count, design rationale
+  \item
+    \textbf{Results} --- the per-subject and summary tables, plus the
+    paired test
+  \item
+    \textbf{Analysis} --- where you beat MixNet, where you lose, and
+    your hypothesis why; which subjects were hardest and what they have
+    in common
+  \item
+    \textbf{Reproduction} --- the exact commands you ran
+  \end{itemize}
+\end{enumerate}
+
+
+
+\section{10. Rules}\label{rules}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Do not modify anything under \texttt{mixnet/} other than your two
+  files.
+\item
+  Do not train on session \texttt{E}, and do not select hyper-parameters
+  on it.
+\item
+  Keep \texttt{k\_folds=5} and all 9 subjects, so the comparison stays
+  paired.
+\item
+  Fit every data-driven transform on the training fold only.
+\item
+  Cite any external code or paper you draw on.
+\item
+  Report what you actually ran. Reproducibility is more important than
+  your model's performance!
+\end{enumerate}
+
+
+
+\section{11. Grading}\label{grading}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Criterion
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Weight
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Preprocessing --- correct, leak-free, justified & 25\% \\
+Model --- valid contract, sound design, justified & 25\% \\
+Benchmark --- correct protocol, paired statistics, complete tables &
+20\% \\
+Analysis --- depth of interpretation & 20\% \\
+Reproducibility --- the grader can re-run your commands and get your
+numbers & 10\% \\
+\end{longtable}
+}
+
+
+
+\section{12. Suggested schedule}\label{suggested-schedule}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Week & Goal \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & Setup, data download, MixNet baseline reproduced and recorded \\
+1-2 & Task 1 --- preprocessing running for all 9 subjects \\
+1-2 & Task 2 --- model training end to end, first tuning pass \\
+3 & Task 3 --- benchmark, \texttt{REPORT} \\
+\end{longtable}
+}
+
+Good luck --- and start the baseline run early.
+
+\end{document}

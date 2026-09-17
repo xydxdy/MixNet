@@ -5,3 +5,4 @@ from .MixNet import MixNet
 from .SpectralSpatialCNN import SpectralSpatialCNN
 from .SVM import SVM
 from .MIN2Net_original import MIN2Net_original
+from .HW_Net import HW_Net
