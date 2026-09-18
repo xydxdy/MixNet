@@ -15,12 +15,16 @@ Prerequisite
 import mixnet.preprocessing as prep
 
 prep.BCIC2a.HW_prep.subject_dependent_setting(
-    k_folds=5, 
-    pick_smp_freq=100, 
-    save_path='datasets', 
+    k_folds=5,
+    pick_smp_freq=100,
+    save_path='datasets',
     num_class=2,
     # ---------------------------------------------------------------------------
-    #  TODO -- add the hyper-parameters of YOUR pipeline here.
+    #  Hyper-parameters of the band-pass + per-channel z-score pipeline in
+    #  mixnet/preprocessing/BCIC2a/HW_prep.py
     # ---------------------------------------------------------------------------
+    lowcut=8.0,
+    highcut=30.0,
+    order=5,
     )
 

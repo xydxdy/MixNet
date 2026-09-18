@@ -149,21 +149,14 @@ class HW_Net(models.base.BaseModel):
             channels_first -> input_shape = (depth, n_channels, n_samples)
             channels_last  -> input_shape = (n_channels, n_samples, depth)
         """
-        raise NotImplementedError(
-            'HOMEWORK: implement _config() in mixnet/models/HW_Net.py'
-        )
-
-        # Sketch of what a filled-in version looks like -- delete the raise
-        # above and adapt:
-        #
-        # self.F1 = 8
-        # self.kernel_length = 64
-        # self.dropout_rate = 0.5
-        # self.norm_rate = 0.25
-        # if self.data_format == 'channels_first':
-        #     self.Chans, self.Samples = self.input_shape[1], self.input_shape[2]
-        # else:
-        #     self.Chans, self.Samples = self.input_shape[0], self.input_shape[1]
+        self.F1 = 8               # number of temporal filters
+        self.kernel_length = 64   # ~0.64 s at 100 Hz
+        self.dropout_rate = 0.5
+        self.norm_rate = 0.25
+        if self.data_format == 'channels_first':
+            self.Chans, self.Samples = self.input_shape[1], self.input_shape[2]
+        else:
+            self.Chans, self.Samples = self.input_shape[0], self.input_shape[1]
 
         # Keep this last: it lets the experiment config override the defaults.
         for k in kwargs.keys():
@@ -196,19 +189,45 @@ class HW_Net(models.base.BaseModel):
         Useful regularisers on this dataset (it is small -- ~115 training
         trials per fold): `max_norm` kernel constraints, dropout,
         batch normalisation, and keeping the parameter count low.
+
+        This implementation is a minimal, single-branch temporal + spatial
+        conv net (an EEGNet-lite): one Conv2D learns `F1` temporal filters
+        along the time axis, one DepthwiseConv2D collapses the 20-channel
+        axis into a single spatial filter per temporal filter, then a small
+        dense head classifies the pooled features. It is intentionally
+        shallow so it is easy to read end to end and still gives a
+        legitimate (non-toy) baseline to compare against MixNet.
         """
-        raise NotImplementedError(
-            'HOMEWORK: implement build() in mixnet/models/HW_Net.py'
-        )
+        input1 = layers.Input(shape=self.input_shape)
+
+        # temporal convolution: F1 learned band-pass-like filters over time
+        block1 = layers.Conv2D(self.F1, (1, self.kernel_length),
+                               padding='same', use_bias=False)(input1)
+        block1 = layers.BatchNormalization()(block1)
+
+        # spatial convolution: collapse all 20 channels into one spatial
+        # filter per temporal filter (depth_multiplier=1 keeps it minimal)
+        block1 = layers.DepthwiseConv2D((self.Chans, 1), use_bias=False,
+                                        depth_multiplier=1,
+                                        depthwise_constraint=max_norm(1.))(block1)
+        block1 = layers.BatchNormalization()(block1)
+        block1 = layers.Activation('elu')(block1)
+        block1 = layers.AveragePooling2D((1, 8))(block1)
+        block1 = layers.Dropout(self.dropout_rate)(block1)
+
+        flatten = layers.Flatten(name='flatten')(block1)
+        dense = layers.Dense(self.num_class, name='dense',
+                             kernel_constraint=max_norm(self.norm_rate))(flatten)
+        softmax = layers.Activation('softmax', name='softmax')(dense)
 
         # ---- required epilogue, keep it once your graph is defined ----------
-        # model = Model(inputs=input1, outputs=softmax, name=self.model_name)
-        # if print_summary:
-        #     model.summary()
-        # if load_weights:
-        #     print('loading weights from', self.weights_dir)
-        #     model.load_weights(self.weights_dir)
-        # return model
+        model = Model(inputs=input1, outputs=softmax, name=self.model_name)
+        if print_summary:
+            model.summary()
+        if load_weights:
+            print('loading weights from', self.weights_dir)
+            model.load_weights(self.weights_dir)
+        return model
 
     # =========================================================================
     #  Provided for you -- custom training / evaluation steps
