@@ -145,7 +145,7 @@ def transform(X, state, pick_smp_freq, lowcut=8.0, highcut=30.0, order=5, **kwar
             the SAME trailing shape as the output of `fit_transform()`.
     """
     X_filt = butter_bandpass_filter(
-        X, state['lowcut'], state['highcut'], pick_smp_freq, state['order'])
+        X, lowcut, highcut, pick_smp_freq, order)
     X_out = (X_filt - state['mean']) / state['std']
     return X_out.astype(np.float32)
 
