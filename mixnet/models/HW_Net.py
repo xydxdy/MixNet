@@ -4,45 +4,36 @@
 =============================================================================
 
 `HW_Net` plugs into the exact same training machinery as MixNet, EEGNet
-and DeepConvNet, so the benchmark in Part 3 is a fair comparison: 
+and DeepConvNet, so the benchmark in Part 3 is a fair comparison:
 same folds, same subjects, same early stopping, same metrics.
 
+THIS FILE IS THE "MULTI-TASK" EXAMPLE: it implements the optional path
+described in "IF YOU GO MULTI-TASK" below with the smallest multi-task
+model that still makes sense -- a shared encoder with two heads:
+  * a decoder that reconstructs the (filtered, normalized) input -- MSE
+  * a classifier that predicts left/right hand from the same latent -- CE
+No triplet/metric-learning term and no adaptive loss-weight blending: those
+are MixNet-specific extras, not requirements of "multi-task".
+
 WHAT IS ALREADY DONE FOR YOU (do not change unless you know why):
-  * `train_step` / `val_step` / `test_step` / `pred_step` -- the custom
-    TensorFlow loops that `mixnet.trainer.Trainer` calls every batch.
-    NOTE: they are written for a SINGLE-TASK model -- one output, one loss
-    (cross-entropy). If you go multi-task you MUST rewrite them; see
-    "IF YOU GO MULTI-TASK" below.
-  * inheritance from `BaseModel`, which gives you `.fit()`, `.evaluate()`
-    and `.predict()` for free.
+  * inheritance from `BaseModel`, which gives you `.fit()` and `.predict()`
+    for free (`.evaluate()` is overridden below -- see point 4).
 
-WHAT YOU MUST IMPLEMENT:
-  1. `_config()` -- declare your architecture hyper-parameters.
+WHAT THIS FILE IMPLEMENTS:
+  1. `_config()` -- architecture hyper-parameters.
   2. `build()`   -- return a `tf.keras.models.Model`.
+  3. `train_step` / `val_step` / `test_step` / `pred_step` -- rewritten for
+     TWO outputs / TWO losses (see point 3 below).
+  4. `evaluate()` -- overridden because `mixnet/models/base.py` only
+     unpacks multi-output predictions for models named 'MixNet'/'MIN2Net'.
 
 -----------------------------------------------------------------------------
- CONTRACT YOUR `build()` MUST RESPECT
------------------------------------------------------------------------------
-  * Input : one tensor of shape `self.input_shape` (no batch axis).
-  * Output: ONE tensor of shape (batch, num_class) holding probabilities,
-            i.e. finish with `layers.Activation('softmax')`.
-            Multi-output models take a different code path in
-            `mixnet/models/base.py` and need extra work -- see
-            "IF YOU GO MULTI-TASK" below before you try one.
-  * Name  : pass `name=self.model_name`. Do NOT name it 'MixNet' or
-            'MIN2Net' -- `base.py` branches on those names.
-  * When `load_weights=True` you must call `model.load_weights(self.weights_dir)`
-    (kept in the template below), otherwise `evaluate()` silently scores an
-    untrained network.
------------------------------------------------------------------------------
-
------------------------------------------------------------------------------
- NOTE: IF YOU GO MULTI-TASK (optional, advanced -- read this before you start)
+ NOTE: IF YOU GO MULTI-TASK (read this before you start)
 -----------------------------------------------------------------------------
  MixNet itself is multi-task: it optimises reconstruction (MSE) + deep metric
  learning (triplet) + classification (cross-entropy) at once, with adaptive
  loss weights. You are allowed to do the same, but the single-task contract
- above then no longer holds and FOUR things must change together:
+ no longer holds and FOUR things must change together:
 
  1. `build()` returns a LIST of outputs, with the classifier softmax LAST:
         Model(inputs=input1, outputs=[decoder_out, latent, softmax], ...)
@@ -56,17 +47,21 @@ WHAT YOU MUST IMPLEMENT:
     Keep the name 'crossentropy' for the classification loss -- `Trainer`
     looks it up by that name to apply class balancing.
 
+    This example uses only two tasks:
+        'loss':         [MeanSquaredError(), SparseCategoricalCrossentropy()],
+        'loss_names':   ['mse', 'crossentropy'],
+        'loss_weights': [1.0, 1.0],
+
  3. `train_step` / `val_step` / `test_step` / `pred_step` below must compute
     every loss, combine them with the incoming `loss_weights`, and log one
     `*_<loss_name>_loss` entry per task. `mixnet/models/MixNet.py` is the
-    reference implementation -- read its steps side by side with the
-    single-task ones below. The shape of a multi-task step is:
+    reference implementation -- read its steps side by side with this file.
+    The shape of a multi-task step is:
 
         xr, z, y_logis = self.model(x, training=True)
         mse_loss   = self.loss.mse(x, xr)
-        trp_loss   = self.loss.triplet(y, z)
         ce_loss    = self.loss.crossentropy(y, y_logis)
-        losses     = [mse_loss, trp_loss, ce_loss]     # same order as loss_names
+        losses     = [mse_loss, ce_loss]                # same order as loss_names
         train_loss = tf.reduce_sum(loss_weights * losses)
         ...
         return logs, (xr, z, y_logis)                  # outputs, classifier last
@@ -90,20 +85,16 @@ WHAT YOU MUST IMPLEMENT:
  ablation: train the same network with and without each extra loss.
 -----------------------------------------------------------------------------
 
-Minimal smoke-test architecture -- paste this into `build()` to verify the
-plumbing end-to-end BEFORE you design anything clever, then replace it:
-
-        input1  = layers.Input(shape=self.input_shape)
-        x       = layers.Flatten()(input1)
-        x       = layers.Dense(self.num_class)(x)
-        softmax = layers.Activation('softmax', name='softmax')(x)
-        model   = Model(inputs=input1, outputs=softmax, name=self.model_name)
-
-Read `mixnet/models/EEGNet.py` and `mixnet/models/DeepConvNet.py` for two
-complete, working examples of this same contract.
+Read `mixnet/models/MixNet.py` for the full three-task reference
+implementation (adds a triplet/metric-learning term and adaptive gradient
+blending on top of what this file does).
 """
 
+import time
+
+import numpy as np
 import tensorflow as tf
+from sklearn.metrics import classification_report, f1_score
 from tensorflow.keras import layers
 from tensorflow.keras.constraints import max_norm
 from tensorflow.keras.models import Model
@@ -118,9 +109,9 @@ class HW_Net(models.base.BaseModel):
                  optimizer,
                  input_shape=(1, 20, 400),
                  num_class=2,
-                 loss=[SparseCategoricalCrossentropy()],
-                 loss_names=['crossentropy'],
-                 loss_weights=[1.0],
+                 loss=[MeanSquaredError(), SparseCategoricalCrossentropy()],
+                 loss_names=['mse', 'crossentropy'],
+                 loss_weights=[1.0, 1.0],
                  model_name='HW_Net',
                  data_format='channels_first',
                  **kwargs):
@@ -132,7 +123,7 @@ class HW_Net(models.base.BaseModel):
         self._config(**kwargs)
 
     # =========================================================================
-    #  TODO 1 / 2 -- architecture hyper-parameters
+    #  Architecture hyper-parameters
     # =========================================================================
     def _config(self, **kwargs):
         """Declare every hyper-parameter your `build()` reads as `self.<name>`.
@@ -141,39 +132,26 @@ class HW_Net(models.base.BaseModel):
         `experiments/configs/HW_Net.py`, because the loop at the bottom of
         this method re-applies the keyword arguments coming from the config.
         That is how you tune a model without editing this file.
-
-        `self.input_shape` is already set. Derive the number of channels and
-        time samples from it -- the layout depends on `data_format`, exactly
-        as in EEGNet:
-
-            channels_first -> input_shape = (depth, n_channels, n_samples)
-            channels_last  -> input_shape = (n_channels, n_samples, depth)
         """
-        raise NotImplementedError(
-            'HOMEWORK: implement _config() in mixnet/models/HW_Net.py'
-        )
-
-        # Sketch of what a filled-in version looks like -- delete the raise
-        # above and adapt:
-        #
-        # self.F1 = 8
-        # self.kernel_length = 64
-        # self.dropout_rate = 0.5
-        # self.norm_rate = 0.25
-        # if self.data_format == 'channels_first':
-        #     self.Chans, self.Samples = self.input_shape[1], self.input_shape[2]
-        # else:
-        #     self.Chans, self.Samples = self.input_shape[0], self.input_shape[1]
+        self.F1 = 8               # number of temporal filters in the encoder
+        self.kernel_length = 64   # ~0.64 s at 100 Hz
+        self.latent_dim = 32      # size of the shared latent `z`
+        self.dropout_rate = 0.5
+        self.norm_rate = 0.25
+        if self.data_format == 'channels_first':
+            self.Chans, self.Samples = self.input_shape[1], self.input_shape[2]
+        else:
+            self.Chans, self.Samples = self.input_shape[0], self.input_shape[1]
 
         # Keep this last: it lets the experiment config override the defaults.
         for k in kwargs.keys():
             self.__setattr__(k, kwargs[k])
 
     # =========================================================================
-    #  TODO 2 / 2 -- the network itself
+    #  The network itself -- shared encoder, two heads
     # =========================================================================
     def build(self, print_summary=True, load_weights=False):
-        """Build and return your architecture as a `tf.keras.models.Model`.
+        """Build and return the multi-task architecture.
 
         Called three times per fold (fit, evaluate, predict), so it must be
         deterministic and free of side effects.
@@ -183,50 +161,70 @@ class HW_Net(models.base.BaseModel):
             load_weights (bool): restore the best checkpoint of this fold.
 
         Returns:
-            tf.keras.models.Model with a single (batch, num_class) softmax output.
+            tf.keras.models.Model with THREE outputs, classifier last:
+            [decoder_out (batch, *input_shape), latent (batch, latent_dim),
+             softmax (batch, num_class)].
 
-        Design ideas -- you must be able to explain WHY you chose yours:
-            * temporal conv + depthwise spatial conv (the EEGNet family)
-            * multi-scale / inception-style parallel temporal kernels
-            * separable convolutions + squeeze-and-excitation attention
-            * a small transformer encoder over time windows
-            * a GRU/LSTM head over convolutional features
-            * a plain MLP on the band-power features from Part 1
-
-        Useful regularisers on this dataset (it is small -- ~115 training
-        trials per fold): `max_norm` kernel constraints, dropout,
-        batch normalisation, and keeping the parameter count low.
+        Design: one shared encoder (temporal conv + depthwise spatial conv,
+        the same idea as EEGNet) produces a latent vector `z`. Two small
+        heads read from `z`: a decoder that reconstructs the input (forces
+        `z` to keep information about the whole signal, not just whatever
+        is easiest for the classifier to exploit) and a classifier. This is
+        the smallest architecture that is genuinely multi-task -- both heads
+        share and shape the same representation, rather than being two
+        unrelated networks bolted together.
         """
-        raise NotImplementedError(
-            'HOMEWORK: implement build() in mixnet/models/HW_Net.py'
-        )
+        input1 = layers.Input(shape=self.input_shape)
 
-        # ---- required epilogue, keep it once your graph is defined ----------
-        # model = Model(inputs=input1, outputs=softmax, name=self.model_name)
-        # if print_summary:
-        #     model.summary()
-        # if load_weights:
-        #     print('loading weights from', self.weights_dir)
-        #     model.load_weights(self.weights_dir)
-        # return model
+        # ---- shared encoder: temporal + spatial conv, then a latent vector
+        enc = layers.Conv2D(self.F1, (1, self.kernel_length), padding='same',
+                            use_bias=False)(input1)
+        enc = layers.BatchNormalization()(enc)
+        enc = layers.DepthwiseConv2D((self.Chans, 1), use_bias=False,
+                                     depth_multiplier=1,
+                                     depthwise_constraint=max_norm(1.))(enc)
+        enc = layers.BatchNormalization()(enc)
+        enc = layers.Activation('elu')(enc)
+        enc = layers.AveragePooling2D((1, 8))(enc)
+        enc = layers.Dropout(self.dropout_rate)(enc)
+        enc = layers.Flatten(name='flatten')(enc)
+        z = layers.Dense(self.latent_dim, name='z',
+                         kernel_constraint=max_norm(0.5))(enc)
+
+        # ---- decoder head: reconstruct the (filtered, normalized) input
+        dec = layers.Dense(self.Chans * self.Samples,
+                           name='decoder_dense')(z)
+        xr = layers.Reshape(self.input_shape, name='decoder_out')(dec)
+
+        # ---- classifier head: left/right hand from the SAME latent `z`
+        clf = layers.Dense(self.num_class, name='dense',
+                           kernel_constraint=max_norm(self.norm_rate))(z)
+        softmax = layers.Activation('softmax', name='softmax')(clf)
+
+        model = Model(inputs=input1, outputs=[xr, z, softmax],
+                     name=self.model_name)
+        if print_summary:
+            model.summary()
+        if load_weights:
+            print('loading weights from', self.weights_dir)
+            model.load_weights(self.weights_dir)
+        return model
 
     # =========================================================================
-    #  Provided for you -- custom training / evaluation steps
+    #  Custom training / evaluation steps -- TWO outputs, TWO losses
     # -------------------------------------------------------------------------
-    #  SINGLE-TASK ONLY. Every step below assumes `self.model(x)` returns ONE
-    #  tensor and that `self.loss` holds exactly one entry, `crossentropy`.
-    #  NOTE: that `loss_weights` is accepted but unused here: with a single loss
-    #  there is nothing to weight.
+    #  self.model(x) returns (xr, z, y_logis); self.loss holds 'mse' and
+    #  'crossentropy'. `loss_weights` is used (not decoration): it is how
+    #  `Trainer`'s adaptive gradient blending, if enabled, reaches the loop.
     # =========================================================================
     @tf.function
     def train_step(self, x, y, loss_weights):
         with tf.GradientTape() as tape:
-            # NOTE: You may rewrite the following line to unpack multiple outputs if you go multi-task 
-            # or use other loss functions. See MixNet for reference.
-            y_logis = self.model(x, training=True)
+            xr, z, y_logis = self.model(x, training=True)
+            mse_loss = self.loss.mse(x, xr)
             crossentropy_loss = self.loss.crossentropy(y, y_logis)
-            losses = [crossentropy_loss]
-            train_loss = tf.reduce_sum(crossentropy_loss)
+            losses = [mse_loss, crossentropy_loss]
+            train_loss = tf.reduce_sum(loss_weights * losses)
             self.train_acc_metric.update_state(y, y_logis)
         grads = tape.gradient(train_loss, self.model.trainable_weights)
         self.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
@@ -234,41 +232,67 @@ class HW_Net(models.base.BaseModel):
         logs.update(dict(zip(['train_' + loss_name + '_loss'
                               for loss_name in self.loss_names], losses)))
         logs.update(dict({'train_acc': self.train_acc_metric.result()}))
-        return logs, y_logis
+        return logs, (xr, z, y_logis)
 
     @tf.function
     def val_step(self, x, y, loss_weights):
-        # NOTE: You may rewrite the following line to unpack multiple outputs if you go multi-task 
-        # or use other loss functions. See MixNet for reference.
-        y_logis = self.model(x, training=False)
+        xr, z, y_logis = self.model(x, training=False)
+        mse_loss = self.loss.mse(x, xr)
         crossentropy_loss = self.loss.crossentropy(y, y_logis)
-        losses = [crossentropy_loss]
-        val_loss = tf.reduce_sum(crossentropy_loss)
+        losses = [mse_loss, crossentropy_loss]
+        val_loss = tf.reduce_sum(loss_weights * losses)
         self.val_acc_metric.update_state(y, y_logis)
         logs = dict({'val_loss': val_loss})
         logs.update(dict(zip(['val_' + loss_name + '_loss'
                               for loss_name in self.loss_names], losses)))
         logs.update(dict({'val_acc': self.val_acc_metric.result()}))
-        return logs, y_logis
+        return logs, (xr, z, y_logis)
 
     @tf.function
     def test_step(self, x, y, loss_weights):
-        # NOTE: You may rewrite the following line to unpack multiple outputs if you go multi-task 
-        # or use other loss functions. See MixNet for reference.
-        y_logis = self.model(x, training=False)
+        xr, z, y_logis = self.model(x, training=False)
+        mse_loss = self.loss.mse(x, xr)
         crossentropy_loss = self.loss.crossentropy(y, y_logis)
-        losses = [crossentropy_loss]
-        test_loss = tf.reduce_sum(crossentropy_loss)
+        losses = [mse_loss, crossentropy_loss]
+        test_loss = tf.reduce_sum(loss_weights * losses)
         self.test_acc_metric.update_state(y, y_logis)
         logs = dict({'test_loss': test_loss})
         logs.update(dict(zip(['test_' + loss_name + '_loss'
                               for loss_name in self.loss_names], losses)))
         logs.update(dict({'test_acc': self.test_acc_metric.result()}))
-        return logs, y_logis
+        return logs, (xr, z, y_logis)
 
     @tf.function
     def pred_step(self, x):
-        # NOTE: You may rewrite the following line to unpack multiple outputs if you go multi-task 
-        # or use other loss functions. See MixNet for reference.
-        y_logis = self.model(x, training=False)
-        return y_logis
+        xr, z, y_logis = self.model(x, training=False)
+        return (xr, z, y_logis)
+
+    # =========================================================================
+    #  evaluate() override -- required for any multi-output model that is
+    #  not named 'MixNet'/'MIN2Net' (see point 4 in the docstring above).
+    #  This mirrors the MixNet branch of `mixnet/models/base.py`.
+    # =========================================================================
+    def evaluate(self, X_test, y_test):
+        model = self.build(print_summary=self.print_summary, load_weights=True)
+        super().compile(model=model)
+        start = time.time()
+        evaluation, test_pred = super().testing(x=X_test, y=y_test)
+        end = time.time()
+
+        y_pred_decoder, zs, y_pred_clf = test_pred[0], test_pred[1:-1], test_pred[-1]
+        zs = zs[0] if len(zs) == 1 else np.array(zs)
+        y_pred_argm = np.argmax(y_pred_clf, axis=1)
+        Y = {'y_true': y_test, 'y_pred': y_pred_argm, 'y_pred_clf': y_pred_clf,
+             'latent': zs, 'y_pred_decoder': y_pred_decoder}
+
+        mem_usage = tf.config.experimental.get_memory_info('GPU:0')['current']
+        print('Checking average current GPU memory usage', mem_usage)
+        print('F1-score is computed based on {}'.format(self.f1_average))
+        f1 = f1_score(y_test, y_pred_argm, average=self.f1_average)
+        print(classification_report(y_test, y_pred_argm))
+        evaluation.update({'f1-score': f1, 'prediction_time': end - start,
+                           'memory_usage': mem_usage})
+        evaluation.update(dict(zip(['w_' + name + '_loss'
+                                    for name in self.loss_names],
+                                   self.best_loss_weights.numpy())))
+        return Y, evaluation

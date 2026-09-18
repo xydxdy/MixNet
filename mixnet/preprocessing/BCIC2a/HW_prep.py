@@ -57,6 +57,7 @@ from sklearn.model_selection import StratifiedKFold
 
 from mixnet.preprocessing.BCIC2a import raw
 from mixnet.preprocessing.config import CONSTANT
+from mixnet.utils import butter_bandpass_filter
 
 CONSTANT = CONSTANT['BCIC2a']
 raw_path = CONSTANT['raw_path']
@@ -75,36 +76,53 @@ DATA_TYPE = 'HW_prep'
 #  NOTE: you are allowed to add any extra arguments to `fit_transform()` and `transform()`
 #  but you must NOT change the signature of `subject_dependent_setting()`.
 # =============================================================================
-def fit_transform(X, y, pick_smp_freq, **kwargs):
+def fit_transform(X, y, pick_smp_freq, lowcut=8.0, highcut=30.0, order=5,
+                  **kwargs):
     """Learn the pipeline parameters on the TRAINING fold and transform it.
 
     Called once per (subject, fold) with the training split only.
 
+    Pipeline (very simple, on purpose -- this homework's model is what does
+    the multi-task work, so the preprocessing here is deliberately minimal):
+      1. Band-pass filter each trial to the mu+beta band (8-30 Hz), where
+         most of the motor-imagery ERD/ERS signal lives. This is STATELESS,
+         so it is safe to apply identically to every split.
+      2. Per-channel z-score normalization, using the mean/std computed on
+         this training fold only. This IS data-driven, so the mean/std are
+         computed here and stored in `state` for `transform()` to reuse.
+         Keeping the signal on a bounded, per-channel-normalized scale also
+         matters for Part 2: `HW_Net`'s reconstruction (MSE) head has to hit
+         this exact same target, so a well-scaled signal keeps that loss
+         numerically comparable to the classification loss.
+
     Args:
         X (np.ndarray): (n_trials, n_channels, n_samples) raw cropped signals.
-        y (np.ndarray): (n_trials,) labels in {0, 1}. Use them if your
-            pipeline is supervised (e.g. CSP); ignore them otherwise.
+        y (np.ndarray): (n_trials,) labels in {0, 1}. Not needed by this
+            simple pipeline; kept in the signature to match the contract.
         pick_smp_freq (int): sampling rate of `X` in Hz (100 by default).
-        **kwargs: whatever extra hyper-parameters you forward from
-            `experiments/prep_HW.py` (band definitions, n_components, ...).
+        lowcut (float): low edge of the band-pass filter, in Hz.
+        highcut (float): high edge of the band-pass filter, in Hz.
+        order (int): Butterworth filter order.
+        **kwargs: forwarded from `experiments/prep_HW.py`; unused here.
 
     Returns:
-        X_out (np.ndarray): (n_trials, ...) transformed training features.
-        state (dict): everything `transform()` needs to reproduce exactly the
-            same transformation on unseen data. Must be picklable/plain Python.
-            Return an empty dict {} if your pipeline is fully stateless.
-            
-    Useful helpers already in the repo:
-        from mixnet.utils import butter_bandpass_filter, resampling, psd_welch
-        from mixnet.preprocessing import FBCSP, SpectralSpatialMapping
-        
-        NOTE: You can also add your own helper functions in this file or in
-        `mixnet/preprocessing/BCIC2a/HW_prep_helpers.py` if you want to keep this file clean.
+        X_out (np.ndarray): (n_trials, n_channels, n_samples) filtered and
+            per-channel normalized training features.
+        state (dict): the per-channel mean/std and the filter settings, so
+            `transform()` can reproduce exactly the same transformation.
     """
-    raise NotImplementedError(
-        'HOMEWORK: implement fit_transform() in '
-        'mixnet/preprocessing/BCIC2a/HW_prep.py'
-    )
+    X_filt = butter_bandpass_filter(X, lowcut, highcut, pick_smp_freq, order)
+
+    # one mean/std per channel, pooled over trials and time -> shape (1, C, 1)
+    mean = X_filt.mean(axis=(0, 2), keepdims=True)
+    std = X_filt.std(axis=(0, 2), keepdims=True) + 1e-8
+
+    X_out = (X_filt - mean) / std
+    state = {
+        'mean': mean,
+        'std': std,
+    }
+    return X_out.astype(np.float32), state
 
 
 # =============================================================================
@@ -113,12 +131,13 @@ def fit_transform(X, y, pick_smp_freq, **kwargs):
 #  NOTE: you are allowed to add any extra arguments to `fit_transform()` and `transform()`
 #  but you must NOT change the signature of `subject_dependent_setting()`.
 # =============================================================================
-def transform(X, state, pick_smp_freq, **kwargs):
+def transform(X, state, pick_smp_freq, lowcut=8.0, highcut=30.0, order=5, **kwargs):
     """Apply the pipeline learned by `fit_transform()` to unseen trials.
 
     Called twice per (subject, fold): once for the validation split and once
-    for the test split. 
-    NOTE: It must NOT re-fit anything -- only read from `state`.
+    for the test split.
+    NOTE: It does NOT re-fit anything -- it only reads from `state`, so the
+    training-fold mean/std never leak into validation/test.
 
     Args:
         X (np.ndarray): (n_trials, n_channels, n_samples) raw cropped signals.
@@ -127,13 +146,13 @@ def transform(X, state, pick_smp_freq, **kwargs):
         **kwargs: same extra hyper-parameters as `fit_transform()`.
 
     Returns:
-        X_out (np.ndarray): (n_trials, ...) features with the SAME trailing
-            shape as the output of `fit_transform()`.
+        X_out (np.ndarray): (n_trials, n_channels, n_samples) features with
+            the SAME trailing shape as the output of `fit_transform()`.
     """
-    raise NotImplementedError(
-        'HOMEWORK: implement transform() in '
-        'mixnet/preprocessing/BCIC2a/HW_prep.py'
-    )
+    X_filt = butter_bandpass_filter(
+        X, lowcut, highcut, pick_smp_freq, order)
+    X_out = (X_filt - state['mean']) / state['std']
+    return X_out.astype(np.float32)
 
 
 # =============================================================================

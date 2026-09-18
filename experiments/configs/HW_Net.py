@@ -47,12 +47,89 @@ Note: You can add your custom data_format to the list above, but you must also i
 -----------------------------------------------------------------------------
 """
 
+from mixnet.models import *
+from mixnet.loss import *
 from mixnet.utils import dotdict
+from tensorflow.keras.optimizers import Adam
+
 
 # =============================================================================
 #  TODO -- keep in sync with your Part 1 pipeline
 # =============================================================================
-def get_params(**kwargs):
+def get_params(dataset, train_type, data_type, num_class, loss_weights=None,
+               log_dir='logs', **kwargs):
     """Return a dotdict of parameters for `run_HW_Net.py`."""
-    
-    raise NotImplementedError("You must implement `get_params()` in your config file.")
+
+    model_name = 'HW_Net'
+    n_subjects = 9 if dataset == 'BCIC2a' else 0
+
+    # HW_prep.py keeps the trailing shape of the raw signal, (20, 400):
+    # 20 channels, 4 s at 100 Hz. 'NDCT' turns that into (n, 1, 20, 400),
+    # which is what HW_Net.input_shape below expects.
+    time_points = 400
+    input_shape = (1, 20, time_points)
+
+    # one weight per task, in the SAME order as loss / loss_names below:
+    # [reconstruction (mse), classification (crossentropy)]
+    loss_weights = [1., 1.] if loss_weights is None else loss_weights
+
+    log_path = '{}/{}/{}_{}_classes_{}'.format(
+        log_dir, model_name, train_type, str(num_class), dataset)
+
+    # subject-dependent hyper-parameters (small dataset -> small batch size)
+    factor = 0.5
+    es_patience = 20
+    lr = 0.01
+    min_lr = 0.01
+    batch_size = 10
+    patience = 5
+    epochs = 200
+    min_epochs = 0
+    dropout_rate = 0.5
+
+    params = dotdict({
+        'model': HW_Net,
+        'model_params': dotdict({
+            'model_name': model_name,
+            'input_shape': input_shape,
+            'latent_dim': 32,
+            'class_balancing': True,
+            'f1_average': 'macro',
+            'num_class': num_class,
+            # multi-task: one entry per task, classifier ('crossentropy')
+            # kept under that exact name so class balancing can find it.
+            'loss': [MeanSquaredError(), SparseCategoricalCrossentropy()],
+            'loss_names': ['mse', 'crossentropy'],
+            'loss_weights': loss_weights,
+            'epochs': epochs,
+            'batch_size': batch_size,
+            'dropout_rate': dropout_rate,
+            'optimizer': Adam(beta_1=0.9, beta_2=0.999, epsilon=1e-08),
+            'lr': lr,
+            'min_lr': min_lr,
+            'factor': factor,
+            'patience': patience,
+            'es_patience': es_patience,
+            'min_epochs': min_epochs,
+            'verbose': 1,
+            'log_path': log_path,
+            'data_format': 'channels_first',
+        }),
+
+        'data_params': dotdict({
+            'dataset': dataset,
+            'train_type': train_type,
+            'data_format': 'NDCT',
+            'data_type': data_type,
+            'num_class': num_class,
+            'dataset_path': 'datasets',
+            'n_subjects': n_subjects,
+            'n_folds': 5,
+            'load_path': 'datasets/{}/{}/{}_class/'.format(
+                dataset, data_type, num_class),
+        }),
+
+        'log_path': log_path,
+    })
+
+    return params
