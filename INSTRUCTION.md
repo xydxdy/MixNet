@@ -33,7 +33,7 @@ By the end of this assignment, you should be able to:
 | Sessions | `T` (training) and `E` (evaluation), recorded on different days |
 | Classes used | 2 — left hand (`0`) and right hand (`1`) |
 | Trials | 144 per session per subject (72 per class) |
-| Channels | 20 pre-selected motor-cortex channels (see `mixnet/preprocessing/config.py`) |
+| Channels | 20 pre-selected motor-cortex channels (see [`mixnet/preprocessing/config.py`](mixnet/preprocessing/config.py)) |
 | Original sampling rate | 250 Hz, downsampled to 100 Hz by the provided loader (optional) |
 | MI window | 4 s, `2 s → 6 s` after the cue (optional) |
 
@@ -47,13 +47,13 @@ In the **subject-dependent** setting, each subject has a separate model. For eac
 
 | File | Status |
 |---|---|
-| `mixnet/preprocessing/BCIC2a/HW_prep.py` | **YOU WRITE** — 2 required functions |
-| `mixnet/models/HW_Net.py` | **YOU WRITE** — model implementation |
-| `experiments/configs/HW_Net.py` | **YOU TUNE** — shapes and hyperparameters |
-| `experiments/prep_HW.py` | Provided — runs your preprocessing pipeline; add your own parameters if needed |
-| `experiments/run_HW_Net.py` | Provided — 5-fold training and evaluation driver |
-| `experiments/benchmark.py` | Provided — aggregation and statistical comparison; no edits needed |
-| Everything else under `mixnet/` | Provided — do not modify |
+| [`mixnet/preprocessing/BCIC2a/HW_prep.py`](mixnet/preprocessing/BCIC2a/HW_prep.py) | **YOU WRITE** — 2 required functions |
+| [`mixnet/models/HW_Net.py`](mixnet/models/HW_Net.py) | **YOU WRITE** — model implementation |
+| [`experiments/configs/HW_Net.py`](experiments/configs/HW_Net.py) | **YOU TUNE** — shapes and hyperparameters |
+| [`experiments/prep_HW.py`](experiments/prep_HW.py) | Provided — runs your preprocessing pipeline; add your own parameters if needed |
+| [`experiments/run_HW_Net.py`](experiments/run_HW_Net.py) | Provided — 5-fold training and evaluation driver |
+| [`experiments/benchmark.py`](experiments/benchmark.py) | Provided — aggregation and statistical comparison; no edits needed |
+| Everything else under [`mixnet/`](mixnet) | Provided — do not modify |
 
 Each file that you are expected to edit begins with a header describing the interface it must satisfy. Read those headers carefully before writing code.
 
@@ -61,7 +61,7 @@ Each file that you are expected to edit begins with a header describing the inte
 
 ## 4. Setup
 
-> **Run all commands below from the `experiments/` directory unless stated otherwise.**
+> **Run all commands below from the [`experiments/`](experiments) directory unless stated otherwise.**
 >
 > The scripts resolve `datasets/` and `logs/` relative to the current working directory, and both directories are git-ignored.
 
@@ -127,7 +127,7 @@ pip install -e .
 
 > ### Use `pip install -e .`
 >
-> Editable mode links Python directly to your working copy of the repository, so changes under `mixnet/` take effect immediately.
+> Editable mode links Python directly to your working copy of the repository, so changes under [`mixnet/`](mixnet) take effect immediately.
 >
 > If you instead use `pip install .`, you will need to reinstall the package after every change.
 
@@ -216,7 +216,7 @@ This is your baseline, and all later comparisons should be made relative to this
 
 ## 6. Task 1 — Build Your Preprocessing Pipeline
 
-**File:** `mixnet/preprocessing/BCIC2a/HW_prep.py`
+**File:** [`mixnet/preprocessing/BCIC2a/HW_prep.py`](mixnet/preprocessing/BCIC2a/HW_prep.py)
 
 Implement the following two functions:
 
@@ -278,7 +278,7 @@ Stateless operations may be applied independently to each split. Examples includ
 
 You are free to design your own pipeline. Possible directions include:
 
-- Filter bank + CSP using `mixnet.preprocessing.FBCSP`
+- Filter bank + CSP using [`mixnet.preprocessing.FBCSP`](mixnet/preprocessing/FBCSP.py)
 - Band-power or log-variance features for each channel and frequency band
 - Riemannian covariance features with tangent-space projection
 - STFT or wavelet time-frequency maps
@@ -332,7 +332,7 @@ For each subject, you should expect:
 
 ## 7. Task 2 — Build Your Neural Network
 
-**File:** `mixnet/models/HW_Net.py`
+**File:** [`mixnet/models/HW_Net.py`](mixnet/models/HW_Net.py)
 
 Implement your model architecture and any model-specific configuration required by the provided framework.
 
@@ -368,7 +368,7 @@ layers.Activation('softmax')
 name=self.model_name
 ```
 
-Do **not** name your model `MixNet` or `MIN2Net`, because `mixnet/models/base.py` contains special branches for those model names.
+Do **not** name your model `MixNet` or `MIN2Net`, because [`mixnet/models/base.py`](mixnet/models/base.py) contains special branches for those model names.
 
 Keep the provided `load_weights` block. Otherwise, `evaluate()` may silently evaluate an untrained model.
 
@@ -416,15 +416,15 @@ If you use multiple outputs, the following changes are required:
 | Component | Required change |
 |---|---|
 | `build()` | Return a **list of outputs**, with the classifier softmax output **last** |
-| `configs/HW_Net.py` | Add one entry per task, in the same order, to `loss`, `loss_names`, and `loss_weights` |
+| [`configs/HW_Net.py`](experiments/configs/HW_Net.py) | Add one entry per task, in the same order, to `loss`, `loss_names`, and `loss_weights` |
 | Classification loss name | Keep the name `'crossentropy'`, otherwise class balancing will not work correctly |
 | Step functions | Rewrite `train_step`, `val_step`, `test_step`, and `pred_step` to unpack all outputs and compute all losses |
 | Loss logging | Log one `*_<name>_loss` value for each task |
-| `evaluate()` | Override it inside `HW_Net.py` |
+| `evaluate()` | Override it inside [`HW_Net.py`](mixnet/models/HW_Net.py) |
 
-The `evaluate()` override is necessary because `base.py` only handles multi-output predictions automatically for models named `MixNet` or `MIN2Net`.
+The `evaluate()` override is necessary because [`base.py`](mixnet/models/base.py) only handles multi-output predictions automatically for models named `MixNet` or `MIN2Net`.
 
-Do **not** rename your model to `MixNet` to enter this code path, and do not edit `base.py`.
+Do **not** rename your model to `MixNet` to enter this code path, and do not edit [`base.py`](mixnet/models/base.py).
 
 Use:
 
@@ -673,7 +673,7 @@ Provide the exact commands needed to reproduce:
 
 ## 10. Rules
 
-1. Do not modify files under `mixnet/` other than the files specifically assigned to you.
+1. Do not modify files under [`mixnet/`](mixnet) other than the files specifically assigned to you.
 2. Do not train on session `E`.
 3. Do not use session `E` for model selection or hyperparameter tuning.
 4. Keep `k_folds=5`.
