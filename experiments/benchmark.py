@@ -195,13 +195,6 @@ def paired_test(per_subject, baseline, candidate, metric):
         except ValueError as exc:                    # noqa: BLE001
             print('{:<28}: skipped ({})'.format('Wilcoxon', exc))
 
-    sd = diff.std(ddof=1)
-    if sd > 0:
-        print('{:<28}: {:.4f}'.format("Cohen's d (paired)", diff.mean() / sd))
-    print('\nRule of thumb: p < 0.05 means the difference is unlikely to be '
-          'noise. With only 9 subjects the test has low power, so report the '
-          'per-subject table as well -- never the p-value alone.')
-
 
 def to_markdown(df, float_fmt='{:.4f}'):
     """Render a frame as a markdown table without requiring the `tabulate` extra."""
@@ -233,8 +226,6 @@ def main():
                         help='run name used as the baseline of the paired test')
     parser.add_argument('--candidate', type=str, default=None,
                         help='run name compared against the baseline')
-    parser.add_argument('--metric', type=str, default='test_acc',
-                        choices=METRICS, help='metric of the paired test')
     parser.add_argument('--out_prefix', type=str, default='benchmark',
                         help='prefix of the written CSV files')
     args = parser.parse_args()
@@ -277,14 +268,15 @@ def main():
     baseline = args.baseline
     candidate = args.candidate
     if baseline is None or candidate is None:
-        # Sensible default: compare a HWNet-like run against a MixNet one.
+        # Sensible default: compare MixNet against whichever other run is found.
         guess_base = next((n for n in names if 'MixNet' in n), None)
-        guess_cand = next((n for n in names if 'HW_' in n), None)
+        guess_cand = next((n for n in names if n != guess_base), None)
         baseline = baseline or guess_base
         candidate = candidate or guess_cand
 
     if baseline and candidate and baseline != candidate:
-        paired_test(per_subject, baseline, candidate, args.metric)
+        for metric in metrics:
+            paired_test(per_subject, baseline, candidate, metric)
     elif len(names) >= 2:
         print('\nTwo or more runs found but no pair selected. Re-run with '
               '--baseline and --candidate, e.g.\n'
