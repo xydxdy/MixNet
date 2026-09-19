@@ -10,14 +10,14 @@ To make the comparison fair, your method and MixNet must be evaluated under exac
 
 By the end of this assignment, you should be able to:
 
-1. **Build a reusable EEG pipeline.**  
-   Implement your preprocessing or feature-extraction method and neural network within the repository's existing experimental framework.
+1. **Develop and justify your own MI-EEG pipeline.**
+   Formulate a clear idea or hypothesis, then design a preprocessing/feature-extraction pipeline and neural network based on that reasoning.
 
-2. **Run a controlled benchmark.**  
-   Compare your proposed method with a strong published baseline under the same experimental conditions, and report the results transparently, including cases where your method performs worse.
+2. **Conduct a fair and reproducible benchmark.**
+   Compare your method with MixNet under the same experimental protocol, while preventing data leakage and using validation data appropriately.
 
-3. **Interpret your results.**  
-   Go beyond reporting average performance. Examine the per-subject results together with the paired statistical test, identify patterns in the results, and propose reasonable explanations for what you observe.
+3. **Analyze and communicate your findings.**
+   Interpret the per-subject and statistical results, evaluate whether they support your hypothesis, and discuss limitations, possible explanations, and future improvements.
 
 ---
 
@@ -531,8 +531,7 @@ You can also specify the comparison explicitly:
 ```bash
 python benchmark.py \
     --baseline MixNet \
-    --candidate HWNet \
-    --metric test_acc
+    --candidate HWNet
 ```
 
 The script produces:
@@ -582,80 +581,45 @@ mixnet/models/HWNet.py
 experiments/configs/HWNet.py
 ```
 
-### 2. Results
-
-Submit:
-
-```text
-benchmark_per_subject.csv
-benchmark_summary.csv
-S*_all_results.csv
-```
-
-The experiment outputs are git-ignored by default.
-
-Copy the required result files into a directory such as:
-
-```text
-results/
-```
-
-at the repository root and commit them.
-
-### 3. Report
+### 2. Report
 
 Submit a **3–5 page A4 report** at the repository root.
 
-Your report should contain the following sections:
+There is **no required section format**, but the report should be written in a style similar to a short conference paper. The goal is not only to describe what you implemented, but also to clearly communicate the **idea behind your method, your hypothesis, your design choices, and what you learned from the results**.
 
-#### Preprocessing
+Your report should clearly address the following points:
 
-Describe:
+* **Motivation and hypothesis**
+  Explain the main idea behind your method. What do you expect your preprocessing pipeline or model to capture, and why do you think it could be useful for MI-EEG classification?
 
-- what preprocessing or feature extraction you implemented
-- why you chose it
-- which parts were data-driven
-- how you prevented data leakage
+* **Method and design rationale**
+  Describe your preprocessing, feature extraction, and model architecture. More importantly, explain **why** you made these choices. Connect each important design decision to your original hypothesis or intuition.
 
-#### Model
+* **Data leakage prevention**
+  Clearly explain which parts of your pipeline learn from data and how you ensured that they were fitted using the training fold only.
 
-Include:
+* **Experimental setup**
+  Briefly describe the training, validation, and test protocol, including any important hyperparameters or implementation choices needed to understand your experiment.
 
-- your model architecture
-- an architecture diagram or layer table
-- number of trainable parameters
-- the reasoning behind the design
+* **Results**
+  Report the MixNet baseline and your method under the same evaluation protocol. Include the overall results, per-subject results, and the paired statistical comparison.
 
-#### Results
+* **Interpretation and discussion**
+  Do not only state whether your method performs better or worse. Discuss the pattern you observe. For example:
 
-Include:
+  * Which subjects improve and which do not?
+  * Are the improvements consistent?
+  * Does the result support your original hypothesis?
+  * If the result does not support your hypothesis, what might explain it?
+  * What are the limitations of your current approach?
+  * What would you try next if you continued the project?
 
-- MixNet baseline results
-- your method's results
-- per-subject comparison
-- overall summary
-- paired statistical test
+* **Reproducibility**
+  Provide enough information for another person to reproduce your experiment, including the exact commands used for preprocessing, training, evaluation, and benchmarking.
 
-#### Analysis
+You are encouraged to include figures, architecture diagrams, tables, or visualizations when they help explain your idea or support your interpretation.
 
-Discuss:
-
-- where your method performs better than MixNet
-- where it performs worse
-- whether the differences are consistent across subjects
-- which subjects are most difficult
-- possible explanations for the observed pattern
-
-Your explanation should be supported by the results rather than being purely speculative.
-
-#### Reproduction
-
-Provide the exact commands needed to reproduce:
-
-1. preprocessing
-2. training
-3. evaluation
-4. benchmarking
+The report will be evaluated primarily on the **clarity of your scientific reasoning**, not on whether your method outperforms MixNet. A well-motivated method with a thoughtful analysis of a negative result is acceptable and can receive a strong grade.
 
 ---
 
@@ -679,8 +643,7 @@ Provide the exact commands needed to reproduce:
 |---|---:|
 | Preprocessing — correct, leak-free, and well justified | 30% |
 | Model — valid implementation, sound design, and clear rationale | 30% |
-| Report - quality of results presentation, comparison with MixNet, statistical analysis, and interpretation of findings | 30% |
-| Reproducibility — the grader can rerun your commands and reproduce your results | 10% |
+| Report - quality of results presentation, comparison with MixNet, statistical analysis, and interpretation of findings | 40% |
 
 ---
 
