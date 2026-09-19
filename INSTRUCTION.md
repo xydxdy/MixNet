@@ -558,18 +558,6 @@ Examine which subjects improve and which subjects do not.
 
 Use the paired t-test or Wilcoxon result together with the per-subject table.
 
-There are only 9 subjects, so statistical power is limited. A p-value should therefore never be reported without also showing the underlying subject-level results.
-
-#### Number of subject-level wins
-
-The output:
-
-```text
-candidate wins on k/9 subjects
-```
-
-can help show whether the improvement is consistent across subjects or driven by only a few cases.
-
 ### You Are Not Required to Beat MixNet
 
 MixNet is a published model with tuned hyperparameters.
