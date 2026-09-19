@@ -48,10 +48,10 @@ In the **subject-dependent** setting, each subject has a separate model. For eac
 | File | Status |
 |---|---|
 | [`mixnet/preprocessing/BCIC2a/HW_prep.py`](mixnet/preprocessing/BCIC2a/HW_prep.py) | **YOU WRITE** — 2 required functions |
-| [`mixnet/models/HW_Net.py`](mixnet/models/HW_Net.py) | **YOU WRITE** — model implementation |
-| [`experiments/configs/HW_Net.py`](experiments/configs/HW_Net.py) | **YOU TUNE** — shapes and hyperparameters |
+| [`mixnet/models/HWNet.py`](mixnet/models/HWNet.py) | **YOU WRITE** — model implementation |
+| [`experiments/configs/HWNet.py`](experiments/configs/HWNet.py) | **YOU TUNE** — shapes and hyperparameters |
 | [`experiments/prep_HW.py`](experiments/prep_HW.py) | Provided — runs your preprocessing pipeline; add your own parameters if needed |
-| [`experiments/run_HW_Net.py`](experiments/run_HW_Net.py) | Provided — 5-fold training and evaluation driver |
+| [`experiments/run_HWNet.py`](experiments/run_HWNet.py) | Provided — 5-fold training and evaluation driver |
 | [`experiments/benchmark.py`](experiments/benchmark.py) | Provided — aggregation and statistical comparison; no edits needed |
 | Everything else under [`mixnet/`](mixnet) | Provided — do not modify |
 
@@ -332,7 +332,7 @@ For each subject, you should expect:
 
 ## 7. Task 2 — Build Your Neural Network
 
-**File:** [`mixnet/models/HW_Net.py`](mixnet/models/HW_Net.py)
+**File:** [`mixnet/models/HWNet.py`](mixnet/models/HWNet.py)
 
 Implement your model architecture and any model-specific configuration required by the provided framework.
 
@@ -416,11 +416,11 @@ If you use multiple outputs, the following changes are required:
 | Component | Required change |
 |---|---|
 | `build()` | Return a **list of outputs**, with the classifier softmax output **last** |
-| [`configs/HW_Net.py`](experiments/configs/HW_Net.py) | Add one entry per task, in the same order, to `loss`, `loss_names`, and `loss_weights` |
+| [`configs/HWNet.py`](experiments/configs/HWNet.py) | Add one entry per task, in the same order, to `loss`, `loss_names`, and `loss_weights` |
 | Classification loss name | Keep the name `'crossentropy'`, otherwise class balancing will not work correctly |
 | Step functions | Rewrite `train_step`, `val_step`, `test_step`, and `pred_step` to unpack all outputs and compute all losses |
 | Loss logging | Log one `*_<name>_loss` value for each task |
-| `evaluate()` | Override it inside [`HW_Net.py`](mixnet/models/HW_Net.py) |
+| `evaluate()` | Override it inside [`HWNet.py`](mixnet/models/HWNet.py) |
 
 The `evaluate()` override is necessary because [`base.py`](mixnet/models/base.py) only handles multi-output predictions automatically for models named `MixNet` or `MIN2Net`.
 
@@ -441,7 +441,7 @@ Your preprocessing output and model input must agree.
 Configure both of the following in:
 
 ```text
-experiments/configs/HW_Net.py
+experiments/configs/HWNet.py
 ```
 
 - `data_params.data_format`
@@ -463,13 +463,13 @@ for details.
 
 ```bash
 cd experiments
-python run_HW_Net.py
+python run_HWNet.py
 ```
 
 Results will be saved under:
 
 ```text
-experiments/logs/HW_Net/subject_dependent_2_classes_BCIC2a/
+experiments/logs/HWNet/subject_dependent_2_classes_BCIC2a/
 ```
 
 Typical output files include:
@@ -486,7 +486,7 @@ Typical output files include:
 Tune your model through:
 
 ```text
-experiments/configs/HW_Net.py
+experiments/configs/HWNet.py
 ```
 
 Examples include:
@@ -524,14 +524,14 @@ With no additional arguments, the script:
 1. Finds runs under `logs/`
 2. Averages the 5 folds within each subject
 3. Reports mean ± standard deviation across the 9 subjects
-4. Performs a paired comparison between MixNet and your `HW_Net`
+4. Performs a paired comparison between MixNet and your `HWNet`
 
 You can also specify the comparison explicitly:
 
 ```bash
 python benchmark.py \
     --baseline MixNet \
-    --candidate HW_Net \
+    --candidate HWNet \
     --metric test_acc
 ```
 
@@ -590,8 +590,8 @@ Submit:
 
 ```text
 mixnet/preprocessing/BCIC2a/HW_prep.py
-mixnet/models/HW_Net.py
-experiments/configs/HW_Net.py
+mixnet/models/HWNet.py
+experiments/configs/HWNet.py
 ```
 
 ### 2. Results

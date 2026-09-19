@@ -17,11 +17,11 @@ Usage
 
     # compare two specific runs and name them
     python benchmark.py \
-        --runs HW_Net=logs/HW_Net/subject_dependent_2_classes_BCIC2a \
+        --runs HWNet=logs/HWNet/subject_dependent_2_classes_BCIC2a \
                MixNet=logs/MixNet/subject_dependent_2_classes_BCIC2a_HistoricalTangentSlope_csp_components_2_margin_1.0_latent_dim_18_warmup_7
 
     # pick which two runs the paired test compares
-    python benchmark.py --baseline MixNet --candidate HW_Net
+    python benchmark.py --baseline MixNet --candidate HWNet
 
 Outputs
     a per-subject table and a summary table on stdout (markdown, paste-ready)
@@ -243,7 +243,7 @@ def main():
     if not runs:
         raise SystemExit(
             'No runs found under "{}". Train at least one model first, e.g.\n'
-            '  python run_HW_Net.py\n'
+            '  python run_HWNet.py\n'
             '  python run_MixNet.py --dataset BCIC2a --train_type subject_dependent '
             "--data_type spectral_spatial_signals --n_component 2 --warmup 7"
             .format(args.log_dir))
@@ -277,7 +277,7 @@ def main():
     baseline = args.baseline
     candidate = args.candidate
     if baseline is None or candidate is None:
-        # Sensible default: compare a HW_Net-like run against a MixNet one.
+        # Sensible default: compare a HWNet-like run against a MixNet one.
         guess_base = next((n for n in names if 'MixNet' in n), None)
         guess_cand = next((n for n in names if 'HW_' in n), None)
         baseline = baseline or guess_base

@@ -7,20 +7,20 @@ Subject-dependent 5-fold cross-validation on BCIC2a
 
 Usage
     # one subject
-    python run_HW_Net.py --subjects 1
+    python run_HWNet.py --subjects 1
 
     # the full experiment: 9 subjects x 5 folds
-    python run_HW_Net.py
+    python run_HWNet.py
 
     # on a specific GPU
-    python run_HW_Net.py --GPU 0
+    python run_HWNet.py --GPU 0
 
 Prerequisite
     python download_datasets.py --dataset 'BCIC2a'
     python prep_HW.py
 
 Results land in
-    logs/HW_Net/subject_dependent_2_classes_BCIC2a/
+    logs/HWNet/subject_dependent_2_classes_BCIC2a/
         S001_all_results.csv          <- one row per fold (test_acc, f1-score, ...)
         S001_prediction_results.npy   <- y_true / y_pred per fold
         S001_fold01_out_weights.h5    <- best checkpoint of that fold
@@ -73,7 +73,7 @@ def main(subject):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', type=str, default='HW_Net',
+    parser.add_argument('--model_name', type=str, default='HWNet',
                         help='name of the config file in configs/')
     parser.add_argument('--dataset', type=str, default='BCIC2a',
                         help='dataset name')

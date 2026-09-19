@@ -4,7 +4,7 @@
 =============================================================================
 
 Your job in this file is to turn *raw* BCI Competition IV-2a MI-EEG trials
-into the feature tensors that your model in `mixnet/models/HW_Net.py`
+into the feature tensors that your model in `mixnet/models/HWNet.py`
 will be trained on.
 
 WHAT IS ALREADY DONE FOR YOU (do not change unless you know why):
@@ -46,7 +46,7 @@ Data you must return
         the `input_shape` of your model: `DataLoader` reshapes it according to
         `data_format`, and the result minus the trial axis is what your
         network receives. The driver below prints the shape after every fold
-        -- note it down, you need it in `experiments/configs/HW_Net.py`. See
+        -- note it down, you need it in `experiments/configs/HWNet.py`. See
         the data_format table in that file.
 """
 
@@ -65,7 +65,7 @@ orig_smp_freq = CONSTANT['orig_smp_freq']
 MI_len = CONSTANT['MI']['len']
 
 # Name of the folder your features are written to. It must match the
-# `--data_type` argument of run_HW_Net.py. Keep it as is.
+# `--data_type` argument of run_HWNet.py. Keep it as is.
 DATA_TYPE = 'HW_prep'
 
 

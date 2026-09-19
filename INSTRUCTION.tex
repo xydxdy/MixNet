@@ -716,7 +716,7 @@ Your preprocessing output and model input must agree.
 Configure both of the following in:
 
 \begin{verbatim}
-experiments/configs/HW_Net.py
+experiments/configs/HWNet.py
 \end{verbatim}
 
 \begin{itemize}
@@ -744,13 +744,13 @@ for details.
 
 \begin{verbatim}
 cd experiments
-python run_HW_Net.py
+python run_HWNet.py
 \end{verbatim}
 
 Results will be saved under:
 
 \begin{verbatim}
-experiments/logs/HW_Net/subject_dependent_2_classes_BCIC2a/
+experiments/logs/HWNet/subject_dependent_2_classes_BCIC2a/
 \end{verbatim}
 
 Typical output files include:
@@ -784,7 +784,7 @@ fold \\
 Tune your model through:
 
 \begin{verbatim}
-experiments/configs/HW_Net.py
+experiments/configs/HWNet.py
 \end{verbatim}
 
 Examples include:
@@ -847,7 +847,7 @@ You can also specify the comparison explicitly:
 \begin{verbatim}
 python benchmark.py \
     --baseline MixNet \
-    --candidate HW_Net \
+    --candidate HWNet \
     --metric test_acc
 \end{verbatim}
 
@@ -917,8 +917,8 @@ Submit:
 
 \begin{verbatim}
 mixnet/preprocessing/BCIC2a/HW_prep.py
-mixnet/models/HW_Net.py
-experiments/configs/HW_Net.py
+mixnet/models/HWNet.py
+experiments/configs/HWNet.py
 \end{verbatim}
 
 \subsection{2. Results}\label{results}

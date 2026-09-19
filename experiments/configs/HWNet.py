@@ -1,16 +1,16 @@
 """
 =============================================================================
- EXPERIMENT CONFIG FOR HW_Net  (BCIC2a, subject-dependent)
+ EXPERIMENT CONFIG FOR HWNet  (BCIC2a, subject-dependent)
 =============================================================================
 
-`experiments/run_HW_Net.py` loads this file through
+`experiments/run_HWNet.py` loads this file through
 `configs/exp_config.get_params()` and uses the returned dotdict to build the
 model, the DataLoader and the log directory.
 
 You will come back to this file constantly -- it is where you tune the
 training model without touching model code, because every key of
-`model_params` is forwarded to `HW_Net.__init__` and re-applied as
-`self.<key>` at the end of `HW_Net._config()`.
+`model_params` is forwarded to `HWNet.__init__` and re-applied as
+`self.<key>` at the end of `HWNet._config()`.
 
 -----------------------------------------------------------------------------
  THE ONE THING THAT BREAKS FIRST: SHAPES
@@ -29,7 +29,7 @@ of a 2-D spatial map.
 
 The below table shows the five valid values for `data_format` and what they do to 
 the shape of your data. The result is what your model will see, so make sure it 
-matches the input shape you defined in `HW_Net.__init__()`.
+matches the input shape you defined in `HWNet.__init__()`.
 
   data_format | what the method does                      | result
   ------------+-------------------------------------------+--------------
@@ -53,6 +53,6 @@ from mixnet.utils import dotdict
 #  TODO -- keep in sync with your Part 1 pipeline
 # =============================================================================
 def get_params(**kwargs):
-    """Return a dotdict of parameters for `run_HW_Net.py`."""
+    """Return a dotdict of parameters for `run_HWNet.py`."""
     
     raise NotImplementedError("You must implement `get_params()` in your config file.")

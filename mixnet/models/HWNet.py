@@ -1,9 +1,9 @@
 """
 =============================================================================
- HOMEWORK PART 2 -- BUILD YOUR OWN MODEL  (HW_Net)
+ HOMEWORK PART 2 -- BUILD YOUR OWN MODEL  (HWNet)
 =============================================================================
 
-`HW_Net` plugs into the exact same training machinery as MixNet, EEGNet
+`HWNet` plugs into the exact same training machinery as MixNet, EEGNet
 and DeepConvNet, so the benchmark in Part 3 is a fair comparison: 
 same folds, same subjects, same early stopping, same metrics.
 
@@ -47,7 +47,7 @@ WHAT YOU MUST IMPLEMENT:
  1. `build()` returns a LIST of outputs, with the classifier softmax LAST:
         Model(inputs=input1, outputs=[decoder_out, latent, softmax], ...)
 
- 2. The config (`experiments/configs/HW_Net.py`) must declare one entry per
+ 2. The config (`experiments/configs/HWNet.py`) must declare one entry per
     task, in the SAME order, in all three lists:
         'loss':         [MeanSquaredError(), triplet_loss(margin=1.0),
                          SparseCategoricalCrossentropy()],
@@ -112,7 +112,7 @@ from mixnet import models
 from mixnet.loss import *
 
 
-class HW_Net(models.base.BaseModel):
+class HWNet(models.base.BaseModel):
 
     def __init__(self,
                  optimizer,
@@ -121,7 +121,7 @@ class HW_Net(models.base.BaseModel):
                  loss=[SparseCategoricalCrossentropy()],
                  loss_names=['crossentropy'],
                  loss_weights=[1.0],
-                 model_name='HW_Net',
+                 model_name='HWNet',
                  data_format='channels_first',
                  **kwargs):
         super().__init__(num_class, loss, loss_names, loss_weights,
@@ -138,7 +138,7 @@ class HW_Net(models.base.BaseModel):
         """Declare every hyper-parameter your `build()` reads as `self.<name>`.
 
         Anything you set here can be overridden from
-        `experiments/configs/HW_Net.py`, because the loop at the bottom of
+        `experiments/configs/HWNet.py`, because the loop at the bottom of
         this method re-applies the keyword arguments coming from the config.
         That is how you tune a model without editing this file.
 
@@ -150,7 +150,7 @@ class HW_Net(models.base.BaseModel):
             channels_last  -> input_shape = (n_channels, n_samples, depth)
         """
         raise NotImplementedError(
-            'HOMEWORK: implement _config() in mixnet/models/HW_Net.py'
+            'HOMEWORK: implement _config() in mixnet/models/HWNet.py'
         )
 
         # Sketch of what a filled-in version looks like -- delete the raise
@@ -198,7 +198,7 @@ class HW_Net(models.base.BaseModel):
         batch normalisation, and keeping the parameter count low.
         """
         raise NotImplementedError(
-            'HOMEWORK: implement build() in mixnet/models/HW_Net.py'
+            'HOMEWORK: implement build() in mixnet/models/HWNet.py'
         )
 
         # ---- required epilogue, keep it once your graph is defined ----------
